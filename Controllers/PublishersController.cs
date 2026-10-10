@@ -1,149 +1,157 @@
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Lesson7.Models;
 
-public class PublishersController : Controller
+namespace Lesson7.Controllers
 {
-    private readonly BookStoreDbContext _context;
-
-    public PublishersController(BookStoreDbContext context)
+    public class PublishersController : Controller
     {
-        _context = context;
-    }
+        private readonly BookStoreDbContext _context;
 
-    // GET: PUBLISHERS
-    public async Task<IActionResult> Index()    
-    {
-        return View(await _context.Publishers.ToListAsync());
-    }
-
-    // GET: PUBLISHERS/Details/5
-    public async Task<IActionResult> Details(int? publisherid)
-    {
-        if (publisherid == null)
+        public PublishersController(BookStoreDbContext context)
         {
-            return NotFound();
+            _context = context;
         }
 
-        var publisher = await _context.Publishers
-            .FirstOrDefaultAsync(m => m.PublisherId == publisherid);
-        if (publisher == null)
+        // GET: Publishers
+        public async Task<IActionResult> Index()
         {
-            return NotFound();
+            return View(await _context.Publishers.ToListAsync());
         }
 
-        return View(publisher);
-    }
-
-    // GET: PUBLISHERS/Create
-    public IActionResult Create()
-    {
-        return View();
-    }
-
-    // POST: PUBLISHERS/Create
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("PublisherId,PublisherName,Phone,Address,Books")] Publisher publisher)
-    {
-        if (ModelState.IsValid)
+        // GET: Publishers/Details/5
+        public async Task<IActionResult> Details(int? id)
         {
-            _context.Add(publisher);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-        return View(publisher);
-    }
-
-    // GET: PUBLISHERS/Edit/5
-    public async Task<IActionResult> Edit(int? publisherid)
-    {
-        if (publisherid == null)
-        {
-            return NotFound();
-        }
-
-        var publisher = await _context.Publishers.FindAsync(publisherid);
-        if (publisher == null)
-        {
-            return NotFound();
-        }
-        return View(publisher);
-    }
-
-    // POST: PUBLISHERS/Edit/5
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int? publisherid, [Bind("PublisherId,PublisherName,Phone,Address,Books")] Publisher publisher)
-    {
-        if (publisherid != publisher.PublisherId)
-        {
-            return NotFound();
-        }
-
-        if (ModelState.IsValid)
-        {
-            try
+            if (id == null)
             {
-                _context.Update(publisher);
+                return NotFound();
+            }
+
+            var publisher = await _context.Publishers
+                .FirstOrDefaultAsync(m => m.PublisherId == id);
+
+            if (publisher == null)
+            {
+                return NotFound();
+            }
+
+            return View(publisher);
+        }
+
+        // GET: Publishers/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Publishers/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("PublisherId,PublisherName,Phone,Address")] Publisher publisher)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(publisher);
                 await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateConcurrencyException)
+            return View(publisher);
+        }
+
+        // GET: Publishers/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
             {
-                if (!PublisherExists(publisher.PublisherId))
+                return NotFound();
+            }
+
+            var publisher = await _context.Publishers.FindAsync(id);
+            if (publisher == null)
+            {
+                return NotFound();
+            }
+            return View(publisher);
+        }
+
+        // POST: Publishers/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("PublisherId,PublisherName,Phone,Address")] Publisher publisher)
+        {
+            if (id != publisher.PublisherId)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
                 {
-                    return NotFound();
+                    _context.Update(publisher);
+                    await _context.SaveChangesAsync();
                 }
-                else
+                catch (DbUpdateConcurrencyException)
                 {
-                    throw;
+                    if (!PublisherExists(publisher.PublisherId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(publisher);
+        }
+
+        // GET: Publishers/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var publisher = await _context.Publishers
+                .FirstOrDefaultAsync(m => m.PublisherId == id);
+
+            if (publisher == null)
+            {
+                return NotFound();
+            }
+
+            return View(publisher);
+        }
+
+        // POST: Publishers/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var publisher = await _context.Publishers.FindAsync(id);
+            if (publisher != null)
+            {
+                try
+                {
+                    _context.Publishers.Remove(publisher);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    TempData["ErrorMessage"] = "Không thể xóa nhà xuất bản này vì vẫn còn sách đang thuộc về nó!";
+                    return RedirectToAction(nameof(Delete), new { id = id });
                 }
             }
+
             return RedirectToAction(nameof(Index));
         }
-        return View(publisher);
-    }
 
-    // GET: PUBLISHERS/Delete/5
-    public async Task<IActionResult> Delete(int? publisherid)
-    {
-        if (publisherid == null)
+        private bool PublisherExists(int id)
         {
-            return NotFound();
+            return _context.Publishers.Any(e => e.PublisherId == id);
         }
-
-        var publisher = await _context.Publishers
-            .FirstOrDefaultAsync(m => m.PublisherId == publisherid);
-        if (publisher == null)
-        {
-            return NotFound();
-        }
-
-        return View(publisher);
-    }
-
-    // POST: PUBLISHERS/Delete/5
-    [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int? publisherid)
-    {
-        var publisher = await _context.Publishers.FindAsync(publisherid);
-        if (publisher != null)
-        {
-            _context.Publishers.Remove(publisher);
-        }
-
-        await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
-    }
-
-    private bool PublisherExists(int? publisherid)
-    {
-        return _context.Publishers.Any(e => e.PublisherId == publisherid);
     }
 }

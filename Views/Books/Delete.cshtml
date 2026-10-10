@@ -6,6 +6,11 @@
 
 <h1>Delete</h1>
 
+    @if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
 <h3>Are you sure you want to delete this?</h3>
 <div>
     <h4>Lesson7.Models.Book</h4>
@@ -98,9 +103,11 @@
             @Html.DisplayFor(model => model.Publisher)
         </dd>
     </dl>
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="BookId" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+
+<!-- Thay phần <form> ở cuối file -->
+<form asp-action="Delete" asp-route-id="@Model.BookId">
+    <input type="hidden" name="id" value="@Model.BookId" />
+    <input type="submit" value="Delete" class="btn btn-danger" /> |
+    <a asp-action="Index">Back to List</a>
+</form>
 </div>
